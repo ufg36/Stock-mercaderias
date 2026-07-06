@@ -1,31 +1,11 @@
 [
   {
-    "producto": "Cherry",
-    "cantidad": 2
-  },
-  {
-    "producto": "Peritas",
+    "producto": "Ananá en trozos",
     "cantidad": 1
   },
   {
     "producto": "Ananá entero",
     "cantidad": 1
-  },
-  {
-    "producto": "Ananá en trozos",
-    "cantidad": 1
-  },
-  {
-    "producto": "Garbanzos",
-    "cantidad": 1
-  },
-  {
-    "producto": "Palmitos",
-    "cantidad": 1
-  },
-  {
-    "producto": "Lentejas",
-    "cantidad": 2
   },
   {
     "producto": "Atún (lata chica)",
@@ -36,27 +16,51 @@
     "cantidad": 1
   },
   {
+    "producto": "Champignones",
+    "cantidad": 1
+  },
+  {
+    "producto": "Cherry",
+    "cantidad": 2
+  },
+  {
     "producto": "Choclo entero",
     "cantidad": 3
   },
   {
-    "producto": "Puré de tomates",
-    "cantidad": 2
+    "producto": "durazno",
+    "cantidad": 0
   },
   {
-    "producto": "Jardinera",
-    "cantidad": 2
-  },
-  {
-    "producto": "Champignones",
-    "cantidad": 1
+    "producto": "Fideos largos",
+    "cantidad": 0
   },
   {
     "producto": "Fideos sopa",
     "cantidad": 0
   },
   {
-    "producto": "Fideos largos",
-    "cantidad": 0
+    "producto": "Garbanzos",
+    "cantidad": 1
+  },
+  {
+    "producto": "Jardinera",
+    "cantidad": 2
+  },
+  {
+    "producto": "Lentejas",
+    "cantidad": 2
+  },
+  {
+    "producto": "Palmitos",
+    "cantidad": 1
+  },
+  {
+    "producto": "Peritas",
+    "cantidad": 1
+  },
+  {
+    "producto": "Puré de tomates",
+    "cantidad": 2
   }
 ]

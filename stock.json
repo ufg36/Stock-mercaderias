@@ -50,5 +50,9 @@
   {
     "producto": "Champignones",
     "cantidad": 1
+  },
+  {
+    "producto": "Fideos sopa",
+    "cantidad": 0
   }
 ]

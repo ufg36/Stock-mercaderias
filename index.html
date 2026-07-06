@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock de Latas</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 16px;
+    background: #f5f5f0;
+    color: #222;
+  }
+  h1 {
+    font-size: 22px;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  h2 {
+    font-size: 16px;
+    margin: 24px 0 8px;
+  }
+  #status {
+    text-align: center;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 16px;
+    min-height: 16px;
+  }
+  #status.error { color: #b04a3f; font-weight: bold; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  }
+  th, td {
+    padding: 10px 8px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  th {
+    background: #2f6f4f;
+    color: #fff;
+    font-size: 14px;
+  }
+  td.cantidad {
+    text-align: center;
+    font-weight: bold;
+    width: 50px;
+  }
+  td.controls {
+    text-align: right;
+    white-space: nowrap;
+    width: 90px;
+  }
+  button {
+    border: none;
+    border-radius: 6px;
+    width: 34px;
+    height: 34px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  button:disabled { opacity: 0.5; cursor: default; }
+  .btn-plus {
+    background: #2f6f4f;
+    color: #fff;
+    margin-left: 4px;
+  }
+  .btn-minus {
+    background: #b04a3f;
+    color: #fff;
+  }
+  .add-form, .config-form {
+    background: #fff;
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  }
+  .add-form input, .config-form input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  .add-form button, .config-form button {
+    width: 100%;
+    height: 38px;
+    background: #2f6f4f;
+    color: #fff;
+    font-size: 15px;
+  }
+  .config-form label {
+    font-size: 13px;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 2px;
+  }
+  #gearBtn {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 34px;
+    height: 34px;
+    background: #eee;
+    color: #333;
+    font-size: 16px;
+    border-radius: 50%;
+  }
+  #appView { display: none; }
+</style>
+</head>
+<body>
+
+<button id="gearBtn" title="Configuración">⚙️</button>
+
+<h1>Stock de Latas</h1>
+<div id="status"></div>
+
+<div id="configView" class="config-form" style="display:none;">
+  <label>Usuario u organización de GitHub</label>
+  <input id="cfgOwner" type="text" placeholder="ej: ufg36">
+  <label>Repositorio</label>
+  <input id="cfgRepo" type="text" placeholder="ej: stock-latas-data">
+  <label>Archivo (dentro del repo)</label>
+  <input id="cfgPath" type="text" placeholder="stock.json" value="stock.json">
+  <label>Token de acceso (fine-grained, permiso Contents: Read and write)</label>
+  <input id="cfgToken" type="password" placeholder="github_pat_...">
+  <button id="cfgSaveBtn">Guardar y conectar</button>
+</div>
+
+<div id="appView">
+  <table>
+    <thead>
+      <tr>
+        <th>Producto</th>
+        <th>Cantidad</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="stockBody"></tbody>
+  </table>
+
+  <h2>Agregar producto</h2>
+  <div class="add-form">
+    <input id="newProducto" type="text" placeholder="Nombre del producto">
+    <input id="newCantidad" type="number" min="0" value="1">
+    <button id="addBtn">Agregar</button>
+  </div>
+</div>
+
+<script>
+  const CONFIG_KEY = 'ghConfig';
+
+  const initialData = [
+    { producto: 'Cherry', cantidad: 2 },
+    { producto: 'Peritas', cantidad: 1 },
+    { producto: 'Ananá entero', cantidad: 1 },
+    { producto: 'Ananá en trozos', cantidad: 1 },
+    { producto: 'Garbanzos', cantidad: 1 },
+    { producto: 'Palmitos', cantidad: 1 },
+    { producto: 'Lentejas', cantidad: 2 },
+    { producto: 'Atún (lata chica)', cantidad: 9 },
+    { producto: 'Atún (lata grande)', cantidad: 1 },
+    { producto: 'Choclo entero', cantidad: 3 },
+    { producto: 'Puré de tomates', cantidad: 2 },
+    { producto: 'Jardinera', cantidad: 2 },
+    { producto: 'Champignones', cantidad: 1 }
+  ];
+
+  let config = null;
+  let data = [];
+  let currentSha = null;
+  let isBusy = false;
+  let pollTimer = null;
+
+  function utf8ToBase64(str) {
+    return btoa(unescape(encodeURIComponent(str)));
+  }
+  function base64ToUtf8(str) {
+    return decodeURIComponent(escape(atob(str.replace(/\s/g, ''))));
+  }
+
+  function apiUrl() {
+    return `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${config.path}`;
+  }
+
+  function setStatus(text, isError) {
+    const el = document.getElementById('status');
+    el.textContent = text;
+    el.className = isError ? 'error' : '';
+  }
+
+  function loadConfig() {
+    const saved = localStorage.getItem(CONFIG_KEY);
+    if (!saved) return null;
+    try { return JSON.parse(saved); } catch (e) { return null; }
+  }
+
+  function saveConfig(cfg) {
+    localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg));
+  }
+
+  function showConfigView() {
+    document.getElementById('configView').style.display = 'block';
+    document.getElementById('appView').style.display = 'none';
+    if (config) {
+      document.getElementById('cfgOwner').value = config.owner || '';
+      document.getElementById('cfgRepo').value = config.repo || '';
+      document.getElementById('cfgPath').value = config.path || 'stock.json';
+    }
+  }
+
+  function showAppView() {
+    document.getElementById('configView').style.display = 'none';
+    document.getElementById('appView').style.display = 'block';
+  }
+
+  async function ghGet() {
+    const res = await fetch(apiUrl(), {
+      headers: {
+        'Authorization': `Bearer ${config.token}`,
+        'Accept': 'application/vnd.github+json'
+      }
+    });
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error(`GitHub GET ${res.status}`);
+    const json = await res.json();
+    currentSha = json.sha;
+    return JSON.parse(base64ToUtf8(json.content));
+  }
+
+  async function ghPut(newData, message) {
+    const body = {
+      message: message,
+      content: utf8ToBase64(JSON.stringify(newData, null, 2))
+    };
+    if (currentSha) body.sha = currentSha;
+
+    const res = await fetch(apiUrl(), {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${config.token}`,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (res.status === 409) {
+      throw new Error('conflict');
+    }
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`GitHub PUT ${res.status}: ${errText}`);
+    }
+    const json = await res.json();
+    currentSha = json.content.sha;
+  }
+
+  async function syncChange(mutateFn, actionLabel) {
+    if (isBusy) return;
+    isBusy = true;
+    setStatus('Guardando...');
+    const previous = JSON.parse(JSON.stringify(data));
+    mutateFn();
+    render();
+    try {
+      await ghPut(data, actionLabel);
+      setStatus('Sincronizado ✓');
+    } catch (e) {
+      if (e.message === 'conflict') {
+        setStatus('Otro dispositivo actualizó el stock, se recargó. Repetí la acción si hace falta.', true);
+        try {
+          const remote = await ghGet();
+          data = remote || previous;
+        } catch (e2) {
+          data = previous;
+        }
+      } else {
+        setStatus('Error al guardar: ' + e.message, true);
+        data = previous;
+      }
+      render();
+    } finally {
+      isBusy = false;
+    }
+  }
+
+  function render() {
+    const tbody = document.getElementById('stockBody');
+    tbody.innerHTML = '';
+
+    data.forEach((item, index) => {
+      const tr = document.createElement('tr');
+
+      const tdProducto = document.createElement('td');
+      tdProducto.textContent = item.producto;
+
+      const tdCantidad = document.createElement('td');
+      tdCantidad.className = 'cantidad';
+      tdCantidad.textContent = item.cantidad;
+
+      const tdControls = document.createElement('td');
+      tdControls.className = 'controls';
+
+      const btnMinus = document.createElement('button');
+      btnMinus.className = 'btn-minus';
+      btnMinus.textContent = '-';
+      btnMinus.disabled = isBusy;
+      btnMinus.addEventListener('click', () => {
+        syncChange(() => {
+          if (data[index].cantidad > 0) data[index].cantidad--;
+        }, `Actualizar ${item.producto}`);
+      });
+
+      const btnPlus = document.createElement('button');
+      btnPlus.className = 'btn-plus';
+      btnPlus.textContent = '+';
+      btnPlus.disabled = isBusy;
+      btnPlus.addEventListener('click', () => {
+        syncChange(() => {
+          data[index].cantidad++;
+        }, `Actualizar ${item.producto}`);
+      });
+
+      tdControls.appendChild(btnMinus);
+      tdControls.appendChild(btnPlus);
+
+      tr.appendChild(tdProducto);
+      tr.appendChild(tdCantidad);
+      tr.appendChild(tdControls);
+      tbody.appendChild(tr);
+    });
+  }
+
+  document.getElementById('addBtn').addEventListener('click', () => {
+    const nameInput = document.getElementById('newProducto');
+    const qtyInput = document.getElementById('newCantidad');
+    const name = nameInput.value.trim();
+    const qty = parseInt(qtyInput.value, 10);
+
+    if (!name || isNaN(qty) || qty < 0) return;
+
+    syncChange(() => {
+      data.push({ producto: name, cantidad: qty });
+    }, `Agregar ${name}`).then(() => {
+      nameInput.value = '';
+      qtyInput.value = '1';
+    });
+  });
+
+  document.getElementById('gearBtn').addEventListener('click', () => {
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+    showConfigView();
+  });
+
+  document.getElementById('cfgSaveBtn').addEventListener('click', async () => {
+    const owner = document.getElementById('cfgOwner').value.trim();
+    const repo = document.getElementById('cfgRepo').value.trim();
+    const path = document.getElementById('cfgPath').value.trim() || 'stock.json';
+    const token = document.getElementById('cfgToken').value.trim();
+
+    if (!owner || !repo || !token) {
+      setStatus('Completá usuario, repositorio y token.', true);
+      return;
+    }
+
+    config = { owner, repo, path, token };
+    saveConfig(config);
+    await init();
+  });
+
+  function startPolling() {
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = setInterval(async () => {
+      if (isBusy) return;
+      try {
+        const remote = await ghGet();
+        if (remote) {
+          data = remote;
+          render();
+        }
+      } catch (e) { /* silent: se reintenta en el próximo ciclo */ }
+    }, 20000);
+  }
+
+  async function init() {
+    setStatus('Conectando...');
+    try {
+      const remote = await ghGet();
+      if (remote === null) {
+        data = initialData.map(item => ({ ...item }));
+        await ghPut(data, 'Inicializar stock');
+      } else {
+        data = remote;
+      }
+      showAppView();
+      render();
+      setStatus('Sincronizado ✓');
+      startPolling();
+    } catch (e) {
+      setStatus('No se pudo conectar con GitHub: ' + e.message, true);
+      showConfigView();
+    }
+  }
+
+  config = loadConfig();
+  if (config && config.owner && config.repo && config.token) {
+    init();
+  } else {
+    showConfigView();
+  }
+</script>
+
+</body>
+</html>

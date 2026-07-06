@@ -115,9 +115,19 @@
     border-radius: 50%;
   }
   #appView { display: none; }
+  #exportBtn {
+    width: 100%;
+    height: 38px;
+    background: #1a5276;
+    color: #fff;
+    font-size: 15px;
+    margin-bottom: 16px;
+  }
 </style>
 </head>
 <body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <button id="gearBtn" title="Configuración">⚙️</button>
 
@@ -137,6 +147,8 @@
 </div>
 
 <div id="appView">
+  <button id="exportBtn">Exportar a Excel</button>
+
   <table>
     <thead>
       <tr>
@@ -355,6 +367,15 @@
       nameInput.value = '';
       qtyInput.value = '1';
     });
+  });
+
+  document.getElementById('exportBtn').addEventListener('click', () => {
+    const rows = data.map(item => ({ Producto: item.producto, Cantidad: item.cantidad }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Stock');
+    const fecha = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `stock_latas_${fecha}.xlsx`);
   });
 
   document.getElementById('gearBtn').addEventListener('click', () => {

@@ -307,6 +307,8 @@
   }
 
   function render() {
+    data.sort((a, b) => a.producto.localeCompare(b.producto, 'es', { sensitivity: 'base' }));
+
     const tbody = document.getElementById('stockBody');
     tbody.innerHTML = '';
 

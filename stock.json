@@ -54,5 +54,9 @@
   {
     "producto": "Fideos sopa",
     "cantidad": 0
+  },
+  {
+    "producto": "Fideos largos",
+    "cantidad": 0
   }
 ]

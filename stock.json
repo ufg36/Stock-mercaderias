@@ -1,0 +1,54 @@
+[
+  {
+    "producto": "Cherry",
+    "cantidad": 2
+  },
+  {
+    "producto": "Peritas",
+    "cantidad": 1
+  },
+  {
+    "producto": "Ananá entero",
+    "cantidad": 1
+  },
+  {
+    "producto": "Ananá en trozos",
+    "cantidad": 1
+  },
+  {
+    "producto": "Garbanzos",
+    "cantidad": 1
+  },
+  {
+    "producto": "Palmitos",
+    "cantidad": 1
+  },
+  {
+    "producto": "Lentejas",
+    "cantidad": 2
+  },
+  {
+    "producto": "Atún (lata chica)",
+    "cantidad": 9
+  },
+  {
+    "producto": "Atún (lata grande)",
+    "cantidad": 1
+  },
+  {
+    "producto": "Choclo entero",
+    "cantidad": 3
+  },
+  {
+    "producto": "Puré de tomates",
+    "cantidad": 2
+  },
+  {
+    "producto": "Jardinera",
+    "cantidad": 2
+  },
+  {
+    "producto": "Champignones",
+    "cantidad": 1
+  }
+]

@@ -53,7 +53,8 @@
     },
     {
       "producto": "Fideos largos",
-      "cantidad": 1
+      "cantidad": 1,
+      "objetivo": 1
     },
     {
       "producto": "Fideos sopa",

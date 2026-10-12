@@ -152,6 +152,10 @@
     {
       "producto": "Leche",
       "cantidad": 5
+    },
+    {
+      "producto": "Papas",
+      "cantidad": 1
     }
   ]
 }

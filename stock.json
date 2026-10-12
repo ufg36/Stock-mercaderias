@@ -28,7 +28,8 @@
     },
     {
       "producto": "Café",
-      "cantidad": 1
+      "cantidad": 1,
+      "objetivo": 2
     },
     {
       "producto": "Capeletinis",

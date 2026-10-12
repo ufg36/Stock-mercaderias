@@ -76,6 +76,11 @@
       "cantidad": 1
     },
     {
+      "producto": "Mayonesa",
+      "cantidad": 1,
+      "objetivo": 1
+    },
+    {
       "producto": "Palmitos",
       "cantidad": 1
     },

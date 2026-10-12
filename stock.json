@@ -98,7 +98,8 @@
     },
     {
       "producto": "Peritas",
-      "cantidad": 2
+      "cantidad": 2,
+      "objetivo": 1
     },
     {
       "producto": "Polenta",

@@ -117,6 +117,11 @@
       "producto": "Salsa golf",
       "cantidad": 1,
       "objetivo": 1
+    },
+    {
+      "producto": "Yerba Taragui",
+      "cantidad": 3,
+      "objetivo": 2
     }
   ],
   "extras": []

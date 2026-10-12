@@ -2,7 +2,8 @@
   "items": [
     {
       "producto": "Ananá en trozos",
-      "cantidad": 0
+      "cantidad": 0,
+      "objetivo": 1
     },
     {
       "producto": "Ananá entero",

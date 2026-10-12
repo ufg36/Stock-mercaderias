@@ -21,6 +21,11 @@
       "cantidad": 1
     },
     {
+      "producto": "Capeletinis",
+      "cantidad": 1,
+      "objetivo": 1
+    },
+    {
       "producto": "Champignones",
       "cantidad": 1
     },

@@ -156,6 +156,10 @@
     {
       "producto": "Papas",
       "cantidad": 1
+    },
+    {
+      "producto": "Xapallitos",
+      "cantidad": 1
     }
   ]
 }

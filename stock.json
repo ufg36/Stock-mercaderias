@@ -63,6 +63,11 @@
       "cantidad": 2
     },
     {
+      "producto": "Ketchup",
+      "cantidad": 1,
+      "objetivo": 1
+    },
+    {
       "producto": "Lentejas",
       "cantidad": 2
     },

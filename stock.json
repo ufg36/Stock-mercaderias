@@ -1,74 +1,77 @@
-[
-  {
-    "producto": "Ananá en trozos",
-    "cantidad": 0
-  },
-  {
-    "producto": "Ananá entero",
-    "cantidad": 1
-  },
-  {
-    "producto": "Atún (lata chica)",
-    "cantidad": 7
-  },
-  {
-    "producto": "Atún (lata grande)",
-    "cantidad": 1
-  },
-  {
-    "producto": "Café",
-    "cantidad": 1
-  },
-  {
-    "producto": "Champignones",
-    "cantidad": 1
-  },
-  {
-    "producto": "Cherry",
-    "cantidad": 1
-  },
-  {
-    "producto": "Choclo entero",
-    "cantidad": 3
-  },
-  {
-    "producto": "durazno",
-    "cantidad": 1
-  },
-  {
-    "producto": "Fideos largos",
-    "cantidad": 1
-  },
-  {
-    "producto": "Fideos sopa",
-    "cantidad": 1
-  },
-  {
-    "producto": "Garbanzos",
-    "cantidad": 1
-  },
-  {
-    "producto": "Jardinera",
-    "cantidad": 2
-  },
-  {
-    "producto": "Lentejas",
-    "cantidad": 2
-  },
-  {
-    "producto": "Masa para Pizza",
-    "cantidad": 1
-  },
-  {
-    "producto": "Palmitos",
-    "cantidad": 1
-  },
-  {
-    "producto": "Peritas",
-    "cantidad": 1
-  },
-  {
-    "producto": "Puré de tomates",
-    "cantidad": 2
-  }
-]
+{
+  "items": [
+    {
+      "producto": "Ananá en trozos",
+      "cantidad": 0
+    },
+    {
+      "producto": "Ananá entero",
+      "cantidad": 1
+    },
+    {
+      "producto": "Atún (lata chica)",
+      "cantidad": 7
+    },
+    {
+      "producto": "Atún (lata grande)",
+      "cantidad": 1
+    },
+    {
+      "producto": "Café",
+      "cantidad": 1
+    },
+    {
+      "producto": "Champignones",
+      "cantidad": 1
+    },
+    {
+      "producto": "Cherry",
+      "cantidad": 1
+    },
+    {
+      "producto": "Choclo entero",
+      "cantidad": 3
+    },
+    {
+      "producto": "durazno",
+      "cantidad": 1
+    },
+    {
+      "producto": "Fideos largos",
+      "cantidad": 1
+    },
+    {
+      "producto": "Fideos sopa",
+      "cantidad": 2
+    },
+    {
+      "producto": "Garbanzos",
+      "cantidad": 1
+    },
+    {
+      "producto": "Jardinera",
+      "cantidad": 2
+    },
+    {
+      "producto": "Lentejas",
+      "cantidad": 2
+    },
+    {
+      "producto": "Masa para Pizza",
+      "cantidad": 1
+    },
+    {
+      "producto": "Palmitos",
+      "cantidad": 1
+    },
+    {
+      "producto": "Peritas",
+      "cantidad": 1
+    },
+    {
+      "producto": "Puré de tomates",
+      "cantidad": 2
+    }
+  ],
+  "extras": []
+}

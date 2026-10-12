@@ -9,6 +9,11 @@
       "cantidad": 1
     },
     {
+      "producto": "Arroz",
+      "cantidad": 0,
+      "objetivo": 1
+    },
+    {
       "producto": "Arroz preparado",
       "cantidad": 2,
       "objetivo": 1

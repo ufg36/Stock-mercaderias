@@ -84,7 +84,8 @@
     },
     {
       "producto": "Masa para Pizza",
-      "cantidad": 1
+      "cantidad": 1,
+      "objetivo": 1
     },
     {
       "producto": "Mayonesa",

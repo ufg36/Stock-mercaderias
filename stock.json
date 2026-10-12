@@ -148,5 +148,10 @@
       "objetivo": 2
     }
   ],
-  "extras": []
+  "extras": [
+    {
+      "producto": "Leche",
+      "cantidad": 5
+    }
+  ]
 }

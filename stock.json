@@ -57,7 +57,8 @@
     },
     {
       "producto": "Fideos sopa",
-      "cantidad": 3
+      "cantidad": 3,
+      "objetivo": 1
     },
     {
       "producto": "Garbanzos",

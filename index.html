@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stock de Latas</title>
+<title>Stock de mercaderías</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -55,7 +55,7 @@
   td.controls {
     text-align: right;
     white-space: nowrap;
-    width: 90px;
+    width: 130px;
   }
   button {
     border: none;
@@ -75,6 +75,12 @@
   .btn-minus {
     background: #b04a3f;
     color: #fff;
+  }
+  .btn-delete {
+    background: #eee;
+    color: #b04a3f;
+    font-size: 15px;
+    margin-left: 10px;
   }
   .add-form, .config-form {
     background: #fff;
@@ -131,14 +137,14 @@
 
 <button id="gearBtn" title="Configuración">⚙️</button>
 
-<h1>Stock de Latas</h1>
+<h1>Stock de mercaderías</h1>
 <div id="status"></div>
 
 <div id="configView" class="config-form" style="display:none;">
   <label>Usuario u organización de GitHub</label>
   <input id="cfgOwner" type="text" placeholder="ej: ufg36">
   <label>Repositorio</label>
-  <input id="cfgRepo" type="text" placeholder="ej: stock-latas-data">
+  <input id="cfgRepo" type="text" placeholder="ej: stock-mercaderias">
   <label>Archivo (dentro del repo)</label>
   <input id="cfgPath" type="text" placeholder="stock.json" value="stock.json">
   <label>Token de acceso (fine-grained, permiso Contents: Read and write)</label>
@@ -345,8 +351,21 @@
         }, `Actualizar ${item.producto}`);
       });
 
+      const btnDelete = document.createElement('button');
+      btnDelete.className = 'btn-delete';
+      btnDelete.textContent = '🗑';
+      btnDelete.title = 'Eliminar producto';
+      btnDelete.disabled = isBusy;
+      btnDelete.addEventListener('click', () => {
+        if (!confirm(`¿Eliminar "${item.producto}" del stock?`)) return;
+        syncChange(() => {
+          data.splice(index, 1);
+        }, `Eliminar ${item.producto}`);
+      });
+
       tdControls.appendChild(btnMinus);
       tdControls.appendChild(btnPlus);
+      tdControls.appendChild(btnDelete);
 
       tr.appendChild(tdProducto);
       tr.appendChild(tdCantidad);
@@ -377,7 +396,7 @@
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Stock');
     const fecha = new Date().toISOString().slice(0, 10);
-    XLSX.writeFile(wb, `stock_latas_${fecha}.xlsx`);
+    XLSX.writeFile(wb, `stock_mercaderias_${fecha}.xlsx`);
   });
 
   document.getElementById('gearBtn').addEventListener('click', () => {

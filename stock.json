@@ -69,6 +69,11 @@
       "cantidad": 1
     },
     {
+      "producto": "Polenta",
+      "cantidad": 1,
+      "objetivo": 1
+    },
+    {
       "producto": "Puré de tomates",
       "cantidad": 2
     }

@@ -172,6 +172,10 @@
     {
       "producto": "Bananas",
       "cantidad": 1
+    },
+    {
+      "producto": "Gaseosa",
+      "cantidad": 1
     }
   ]
 }

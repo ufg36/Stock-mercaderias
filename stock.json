@@ -93,7 +93,8 @@
     },
     {
       "producto": "Palmitos",
-      "cantidad": 1
+      "cantidad": 1,
+      "objetivo": 1
     },
     {
       "producto": "Peritas",

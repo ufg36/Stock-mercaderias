@@ -1,6 +1,11 @@
 {
   "items": [
     {
+      "producto": "Aceite extra virgen",
+      "cantidad": 4,
+      "objetivo": 1
+    },
+    {
       "producto": "Ananá en trozos",
       "cantidad": 0,
       "objetivo": 1

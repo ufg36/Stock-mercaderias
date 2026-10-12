@@ -76,6 +76,32 @@
     background: #b04a3f;
     color: #fff;
   }
+  .sub-line {
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .sub-line input {
+    width: 52px;
+    padding: 3px 4px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 13px;
+    text-align: center;
+  }
+  .falta { color: #b04a3f; font-weight: bold; }
+  #shopBtn {
+    width: 100%;
+    height: 38px;
+    background: #b9770e;
+    color: #fff;
+    font-size: 15px;
+    margin-bottom: 16px;
+  }
   .btn-delete {
     background: #eee;
     color: #b04a3f;
@@ -103,6 +129,7 @@
     color: #fff;
     font-size: 15px;
   }
+  .field-label { font-size: 13px; font-weight: bold; display: block; margin-bottom: 2px; }
   .config-form label {
     font-size: 13px;
     font-weight: bold;
@@ -127,7 +154,7 @@
     background: #1a5276;
     color: #fff;
     font-size: 15px;
-    margin-bottom: 16px;
+    margin-bottom: 8px;
   }
 </style>
 </head>
@@ -154,6 +181,7 @@
 
 <div id="appView">
   <button id="exportBtn">Exportar a Excel</button>
+  <button id="shopBtn">🛒 Descargar lista de compras</button>
 
   <table>
     <thead>
@@ -169,7 +197,10 @@
   <h2>Agregar producto</h2>
   <div class="add-form">
     <input id="newProducto" type="text" placeholder="Nombre del producto">
+    <label class="field-label" for="newCantidad">Cantidad actual</label>
     <input id="newCantidad" type="number" min="0" value="1">
+    <label class="field-label" for="newObjetivo">Cantidad ideal en stock</label>
+    <input id="newObjetivo" type="number" min="0" value="1">
     <button id="addBtn">Agregar</button>
   </div>
 </div>
@@ -309,7 +340,43 @@
       render();
     } finally {
       isBusy = false;
+      render();
     }
+  }
+
+  function faltante(item) {
+    const objetivo = Number(item.objetivo) || 0;
+    const actual = Number(item.cantidad) || 0;
+    return Math.max(0, objetivo - actual);
+  }
+
+  function descargarListaCompras() {
+    const faltantes = data
+      .map(item => ({ producto: item.producto, comprar: faltante(item) }))
+      .filter(x => x.comprar > 0)
+      .sort((a, b) => a.producto.localeCompare(b.producto, 'es', { sensitivity: 'base' }));
+
+    if (faltantes.length === 0) {
+      setStatus('No falta nada: todo está en la cantidad ideal ✓');
+      alert('No hay nada para comprar: todos los productos están en la cantidad ideal (o no tienen cantidad ideal cargada).');
+      return;
+    }
+
+    const fecha = new Date().toISOString().slice(0, 10);
+    const lineas = ['LISTA DE COMPRAS - ' + fecha, ''];
+    faltantes.forEach(x => lineas.push(`${x.producto}: ${x.comprar}`));
+    const texto = '\uFEFF' + lineas.join('\r\n') + '\r\n';
+
+    const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `lista_compras_${fecha}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setStatus(`Lista descargada: ${faltantes.length} producto(s) a comprar`);
   }
 
   function render() {
@@ -322,7 +389,39 @@
       const tr = document.createElement('tr');
 
       const tdProducto = document.createElement('td');
-      tdProducto.textContent = item.producto;
+      const nombre = document.createElement('div');
+      nombre.textContent = item.producto;
+      tdProducto.appendChild(nombre);
+
+      const objetivo = Number(item.objetivo) || 0;
+      const sub = document.createElement('div');
+      sub.className = 'sub-line';
+      const lbl = document.createElement('span');
+      lbl.textContent = 'Ideal:';
+      const inpObj = document.createElement('input');
+      inpObj.type = 'number';
+      inpObj.min = '0';
+      inpObj.inputMode = 'numeric';
+      inpObj.className = 'inp-objetivo';
+      inpObj.value = objetivo;
+      inpObj.disabled = isBusy;
+      inpObj.addEventListener('change', () => {
+        let v = parseInt(inpObj.value, 10);
+        if (isNaN(v) || v < 0) v = 0;
+        syncChange(() => {
+          data[index].objetivo = v;
+        }, `Cantidad ideal de ${item.producto}`);
+      });
+      sub.appendChild(lbl);
+      sub.appendChild(inpObj);
+      const faltan = faltante(item);
+      if (faltan > 0) {
+        const f = document.createElement('span');
+        f.className = 'falta';
+        f.textContent = `Faltan ${faltan}`;
+        sub.appendChild(f);
+      }
+      tdProducto.appendChild(sub);
 
       const tdCantidad = document.createElement('td');
       tdCantidad.className = 'cantidad';
@@ -379,25 +478,30 @@
     const qtyInput = document.getElementById('newCantidad');
     const name = nameInput.value.trim();
     const qty = parseInt(qtyInput.value, 10);
+    const objInput = document.getElementById('newObjetivo');
+    const obj = parseInt(objInput.value, 10);
 
     if (!name || isNaN(qty) || qty < 0) return;
 
     syncChange(() => {
-      data.push({ producto: name, cantidad: qty });
+      data.push({ producto: name, cantidad: qty, objetivo: isNaN(obj) || obj < 0 ? 0 : obj });
     }, `Agregar ${name}`).then(() => {
       nameInput.value = '';
       qtyInput.value = '1';
+      objInput.value = '1';
     });
   });
 
   document.getElementById('exportBtn').addEventListener('click', () => {
-    const rows = data.map(item => ({ Producto: item.producto, Cantidad: item.cantidad }));
+    const rows = data.map(item => ({ Producto: item.producto, Cantidad: item.cantidad, Ideal: Number(item.objetivo) || 0, 'A comprar': faltante(item) }));
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Stock');
     const fecha = new Date().toISOString().slice(0, 10);
     XLSX.writeFile(wb, `stock_mercaderias_${fecha}.xlsx`);
   });
+
+  document.getElementById('shopBtn').addEventListener('click', descargarListaCompras);
 
   document.getElementById('gearBtn').addEventListener('click', () => {
     if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
@@ -424,6 +528,7 @@
     if (pollTimer) clearInterval(pollTimer);
     pollTimer = setInterval(async () => {
       if (isBusy) return;
+      if (document.activeElement && document.activeElement.classList.contains('inp-objetivo')) return;
       try {
         const remote = await ghGet();
         if (remote) {

@@ -20,7 +20,8 @@
     },
     {
       "producto": "Atún (lata chica)",
-      "cantidad": 2
+      "cantidad": 2,
+      "objetivo": 4
     },
     {
       "producto": "Atún (lata grande)",

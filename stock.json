@@ -57,6 +57,11 @@
       "cantidad": 2
     },
     {
+      "producto": "Maizena",
+      "cantidad": 2,
+      "objetivo": 1
+    },
+    {
       "producto": "Masa para Pizza",
       "cantidad": 1
     },

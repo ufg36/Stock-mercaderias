@@ -41,7 +41,8 @@
     },
     {
       "producto": "Cherry",
-      "cantidad": 1
+      "cantidad": 1,
+      "objetivo": 1
     },
     {
       "producto": "Choclo entero",

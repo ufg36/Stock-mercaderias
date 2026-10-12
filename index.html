@@ -194,6 +194,17 @@
     <tbody id="stockBody"></tbody>
   </table>
 
+  <h2>Otros productos a comprar</h2>
+  <table>
+    <tbody id="extraBody"></tbody>
+  </table>
+  <div class="add-form" style="margin-top:8px;">
+    <input id="newExtra" type="text" placeholder="Producto que no está en el stock">
+    <label class="field-label" for="newExtraCant">Cantidad a comprar</label>
+    <input id="newExtraCant" type="number" min="1" value="1">
+    <button id="addExtraBtn">Agregar a la lista de compras</button>
+  </div>
+
   <h2>Agregar producto</h2>
   <div class="add-form">
     <input id="newProducto" type="text" placeholder="Nombre del producto">
@@ -226,6 +237,7 @@
 
   let config = null;
   let data = [];
+  let extras = [];
   let currentSha = null;
   let isBusy = false;
   let pollTimer = null;
@@ -235,6 +247,14 @@
   }
   function base64ToUtf8(str) {
     return decodeURIComponent(escape(atob(str.replace(/\s/g, ''))));
+  }
+
+  function normalize(parsed) {
+    if (Array.isArray(parsed)) return { items: parsed, extras: [] };
+    return {
+      items: Array.isArray(parsed && parsed.items) ? parsed.items : [],
+      extras: Array.isArray(parsed && parsed.extras) ? parsed.extras : []
+    };
   }
 
   function apiUrl() {
@@ -283,13 +303,13 @@
     if (!res.ok) throw new Error(`GitHub GET ${res.status}`);
     const json = await res.json();
     currentSha = json.sha;
-    return JSON.parse(base64ToUtf8(json.content));
+    return normalize(JSON.parse(base64ToUtf8(json.content)));
   }
 
   async function ghPut(newData, message) {
     const body = {
       message: message,
-      content: utf8ToBase64(JSON.stringify(newData, null, 2))
+      content: utf8ToBase64(JSON.stringify({ items: newData, extras: extras }, null, 2))
     };
     if (currentSha) body.sha = currentSha;
 
@@ -318,7 +338,7 @@
     if (isBusy) return;
     isBusy = true;
     setStatus('Guardando...');
-    const previous = JSON.parse(JSON.stringify(data));
+    const previous = JSON.parse(JSON.stringify({ data, extras }));
     mutateFn();
     render();
     try {
@@ -329,13 +349,14 @@
         setStatus('Otro dispositivo actualizó el stock, se recargó. Repetí la acción si hace falta.', true);
         try {
           const remote = await ghGet();
-          data = remote || previous;
+          if (remote) { data = remote.items; extras = remote.extras; }
+          else { data = previous.data; extras = previous.extras; }
         } catch (e2) {
-          data = previous;
+          data = previous.data; extras = previous.extras;
         }
       } else {
         setStatus('Error al guardar: ' + e.message, true);
-        data = previous;
+        data = previous.data; extras = previous.extras;
       }
       render();
     } finally {
@@ -354,11 +375,12 @@
     const faltantes = data
       .map(item => ({ producto: item.producto, comprar: faltante(item) }))
       .filter(x => x.comprar > 0)
+      .concat(extras.map(x => ({ producto: x.producto, comprar: Number(x.cantidad) || 1 })))
       .sort((a, b) => a.producto.localeCompare(b.producto, 'es', { sensitivity: 'base' }));
 
     if (faltantes.length === 0) {
       setStatus('No falta nada: todo está en la cantidad ideal ✓');
-      alert('No hay nada para comprar: todos los productos están en la cantidad ideal (o no tienen cantidad ideal cargada).');
+      alert('No hay nada para comprar: todos los productos están en la cantidad ideal (o no tienen cantidad ideal cargada) y no agregaste otros productos.');
       return;
     }
 
@@ -377,6 +399,77 @@
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     setStatus(`Lista descargada: ${faltantes.length} producto(s) a comprar`);
+  }
+
+  function renderExtras() {
+    const tbody = document.getElementById('extraBody');
+    tbody.innerHTML = '';
+
+    if (extras.length === 0) {
+      const tr = document.createElement('tr');
+      const td = document.createElement('td');
+      td.colSpan = 3;
+      td.style.color = '#888';
+      td.style.fontSize = '13px';
+      td.textContent = 'Todavía no agregaste productos extra.';
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+      return;
+    }
+
+    extras.forEach((item, index) => {
+      const tr = document.createElement('tr');
+
+      const tdProducto = document.createElement('td');
+      tdProducto.textContent = item.producto;
+
+      const tdCantidad = document.createElement('td');
+      tdCantidad.className = 'cantidad';
+      tdCantidad.textContent = item.cantidad;
+
+      const tdControls = document.createElement('td');
+      tdControls.className = 'controls';
+
+      const btnMinus = document.createElement('button');
+      btnMinus.className = 'btn-minus';
+      btnMinus.textContent = '-';
+      btnMinus.disabled = isBusy;
+      btnMinus.addEventListener('click', () => {
+        syncChange(() => {
+          if (extras[index].cantidad > 1) extras[index].cantidad--;
+        }, `Actualizar compra de ${item.producto}`);
+      });
+
+      const btnPlus = document.createElement('button');
+      btnPlus.className = 'btn-plus';
+      btnPlus.textContent = '+';
+      btnPlus.disabled = isBusy;
+      btnPlus.addEventListener('click', () => {
+        syncChange(() => {
+          extras[index].cantidad++;
+        }, `Actualizar compra de ${item.producto}`);
+      });
+
+      const btnDelete = document.createElement('button');
+      btnDelete.className = 'btn-delete';
+      btnDelete.textContent = '🗑';
+      btnDelete.title = 'Quitar de la lista de compras';
+      btnDelete.disabled = isBusy;
+      btnDelete.addEventListener('click', () => {
+        syncChange(() => {
+          extras.splice(index, 1);
+        }, `Quitar de compras ${item.producto}`);
+      });
+
+      tdControls.appendChild(btnMinus);
+      tdControls.appendChild(btnPlus);
+      tdControls.appendChild(btnDelete);
+
+      tr.appendChild(tdProducto);
+      tr.appendChild(tdCantidad);
+      tr.appendChild(tdControls);
+      tbody.appendChild(tr);
+    });
   }
 
   function render() {
@@ -471,6 +564,8 @@
       tr.appendChild(tdControls);
       tbody.appendChild(tr);
     });
+
+    renderExtras();
   }
 
   document.getElementById('addBtn').addEventListener('click', () => {
@@ -489,6 +584,22 @@
       nameInput.value = '';
       qtyInput.value = '1';
       objInput.value = '1';
+    });
+  });
+
+  document.getElementById('addExtraBtn').addEventListener('click', () => {
+    const nameInput = document.getElementById('newExtra');
+    const qtyInput = document.getElementById('newExtraCant');
+    const name = nameInput.value.trim();
+    let qty = parseInt(qtyInput.value, 10);
+    if (!name) return;
+    if (isNaN(qty) || qty < 1) qty = 1;
+
+    syncChange(() => {
+      extras.push({ producto: name, cantidad: qty });
+    }, `Agregar a compras ${name}`).then(() => {
+      nameInput.value = '';
+      qtyInput.value = '1';
     });
   });
 
@@ -532,7 +643,8 @@
       try {
         const remote = await ghGet();
         if (remote) {
-          data = remote;
+          data = remote.items;
+          extras = remote.extras;
           render();
         }
       } catch (e) { /* silent: se reintenta en el próximo ciclo */ }
@@ -545,9 +657,11 @@
       const remote = await ghGet();
       if (remote === null) {
         data = initialData.map(item => ({ ...item }));
+        extras = [];
         await ghPut(data, 'Inicializar stock');
       } else {
-        data = remote;
+        data = remote.items;
+        extras = remote.extras;
       }
       showAppView();
       render();

@@ -49,7 +49,8 @@
     },
     {
       "producto": "durazno",
-      "cantidad": 1
+      "cantidad": 1,
+      "objetivo": 1
     },
     {
       "producto": "Fideos largos",
